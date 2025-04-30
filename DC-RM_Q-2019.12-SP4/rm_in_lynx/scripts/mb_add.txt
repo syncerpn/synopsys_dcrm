@@ -1,0 +1,22 @@
+puts "Changing directory to $SEV(dst_dir) for the current task: $SEV(step_name)"
+cd $SEV(dst_dir)
+
+## To handle Branch_task in rm_fc_pnr - set SEV(src_dir) for clock_opt_cts task
+if {[string match $SEV(task) "clock_opt_cts"] && \
+    [file exists $SEV(build_dir)/rm_fc/rm_fc_pnr/logs/UNIFIED_FLOW.dec]} {
+    set decision [exec tail -c 2 $SEV(build_dir)/rm_fc/rm_fc_pnr/logs/UNIFIED_FLOW.dec]
+    if {[string match $decision "1"]} {set SEV(src_dir) $SEV(build_dir)/rm_fc/compile/work}
+}
+
+if {[file isdirectory $SEV(src_dir)]} {
+    puts "Copying data from $SEV(src_dir) to $SEV(dst_dir)."
+    set file_list [glob -nocomplain $SEV(dst_dir)/*]
+    if {[llength $file_list] >0} {
+      foreach file [glob $SEV(dst_dir)/*] {
+        file delete -force $file
+      }
+    }
+    foreach src_file [glob $SEV(src_dir)/*] {
+	file copy $src_file .
+    }
+}
