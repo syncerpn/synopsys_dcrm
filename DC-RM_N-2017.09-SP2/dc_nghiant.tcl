@@ -252,12 +252,55 @@ report_saif -missing > ${REPORTS_DIR}/saif_missing.rpt
 report_resources -hierarchy > ${REPORTS_DIR}/resources.rpt
 report_clock_gating -gated -ungated > ${REPORTS_DIR}/clock_gating.rpt
 
-report_timing -delay max > ${REPORTS_DIR}/_delay.rpt
-report_power > ${REPORTS_DIR}/_power.rpt
-report_area > ${REPORTS_DIR}/_area.rpt
+report_timing -nosplit -delay max > ${REPORTS_DIR}/_delay.rpt
+report_power -analysis_effort high -nosplit > ${REPORTS_DIR}/_power.rpt
+report_area -nosplit > ${REPORTS_DIR}/_area.rpt
 
 if { $OPTIMIZATION_FLOW == "hplp"} {
     redirect ${REPORTS_DIR}/multibit_banking.rpt {report_multibit_banking -nosplit }
 }
+
+# nghiant: quick info extraction
+set result_info ""
+
+set filename ${REPORTS_DIR}/_area.rpt
+set pattern "Total cell area"
+
+set fp [open $filename r]
+while {[gets $fp line] >= 0} {
+    if {[string match "${pattern}*" $line]} {
+        set result_info "$result_info\n$line"
+        break
+    }
+}
+close $fp
+
+# nghiant: quick info extraction
+set filename ${REPORTS_DIR}/_power.rpt
+set pattern "Total  "
+
+set fp [open $filename r]
+while {[gets $fp line] >= 0} {
+    if {[string match "${pattern}*" $line]} {
+        set result_info "$result_info\n$line"
+        break
+    }
+}
+close $fp
+
+# nghiant: quick info extraction
+set filename ${REPORTS_DIR}/_delay.rpt
+set pattern "  data arrival time"
+
+set fp [open $filename r]
+while {[gets $fp line] >= 0} {
+    if {[string match "${pattern}*" $line]} {
+        set result_info "$result_info\n$line"
+        break
+    }
+}
+close $fp
+
+puts $result_info
 
 exit
